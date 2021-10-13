@@ -1,0 +1,18 @@
+<?import javafx.scene.layout.GridPane?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Text?>
+<GridPane fx:controller="sample.view.Controller"
+          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+    <Text GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="4" text="用户："></Text>
+    <TextField fx:id="username" GridPane.columnIndex="5" GridPane.rowIndex="0" GridPane.columnSpan="4"></TextField>
+    <Text GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="4" text="密码："></Text>
+    <PasswordField fx:id="password" GridPane.columnIndex="5" GridPane.rowIndex="1" GridPane.columnSpan="4"></PasswordField>
+    <HBox GridPane.columnIndex="3" GridPane.rowIndex="3" GridPane.columnSpan="10" alignment="center">
+        <Button text="登录" onAction="#onLogin"></Button>
+        <Text fx:id="actionTarget" ></Text>
+    </HBox>
+</GridPane>
