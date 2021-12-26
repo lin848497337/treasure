@@ -11,6 +11,8 @@ public class StockPoolInfo extends BaseModel{
     private String name;
     @ColumnDefine(define = "int")
     private Integer poolType;
+    @ColumnDefine(define = "int")
+    private Integer stockInfoId;
 
     public String getCode() {
         return code;
@@ -34,5 +36,13 @@ public class StockPoolInfo extends BaseModel{
 
     public void setPoolType(Integer poolType) {
         this.poolType = poolType;
+    }
+
+    public Integer getStockInfoId() {
+        return stockInfoId;
+    }
+
+    public void setStockInfoId(Integer stockInfoId) {
+        this.stockInfoId = stockInfoId;
     }
 }

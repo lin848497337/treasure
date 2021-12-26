@@ -5,29 +5,20 @@ import sample.model.DailyAction;
 import sample.model.DailyIndex;
 import sample.model.StockInfo;
 import sample.model.StockPoolInfo;
-import sample.util.ActionTypeEnum;
-import sample.util.DateFormatUtil;
 import sample.util.SQLBuilder;
 import sample.util.StockPoolTypeEnum;
-import sample.util.StockUtil;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class DatabaseManager {
@@ -217,6 +208,7 @@ public class DatabaseManager {
         StockInfo stockInfo = selectByIds(Arrays.asList(stockId)).get(0);
         StockPoolInfo poolInfo = new StockPoolInfo();
         poolInfo.setCode(stockInfo.getCode());
+        poolInfo.setStockInfoId(stockId);
         poolInfo.setName(stockInfo.getName());
         poolInfo.setPoolType(poolTypeEnum.getValue());
         SQLBuilder<StockPoolInfo> poolInfoSQLBuilder = new SQLBuilder<>(StockPoolInfo.class);
@@ -228,6 +220,36 @@ public class DatabaseManager {
         }
     }
 
+    public List<StockInfo> selectPool() throws Exception {
+        SQLBuilder<StockPoolInfo> poolInfoSQLBuilder = new SQLBuilder<>(StockPoolInfo.class);
+        Connection conn = getConnection();
+        try{
+            List<StockPoolInfo> stockPoolInfoList = poolInfoSQLBuilder.selectAll(conn);
+
+            List<Integer> idList = new ArrayList<>();
+            for (StockPoolInfo poolInfo : stockPoolInfoList){
+                idList.add(poolInfo.getStockInfoId());
+            }
+
+            return selectByIds(idList);
+
+        }finally {
+            conn.close();
+        }
+    }
+
+    public List<DailyIndex> selectDailyIndexByStockId(Integer stockId) throws Exception {
+        SQLBuilder sqlBuilder = new SQLBuilder(DailyIndex.class);
+        Connection conn = getConnection();
+        try{
+            List<DailyIndex> stockPoolInfoList = sqlBuilder.select(conn, "stock_info_id="+stockId, null);
+
+            return stockPoolInfoList;
+
+        }finally {
+            conn.close();
+        }
+    }
 
 
     public static void main(String args[]) throws Exception {

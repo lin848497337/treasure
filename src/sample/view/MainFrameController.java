@@ -3,6 +3,7 @@ package sample.view;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,11 +11,13 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;
@@ -24,15 +27,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.HBoxBuilder;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -43,6 +39,7 @@ import sample.model.DailyAction;
 import sample.model.DailyIndex;
 import sample.model.StockInfo;
 import sample.util.DateFormatUtil;
+import sample.util.StockPoolTypeEnum;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -152,6 +149,11 @@ public class MainFrameController {
     @FXML
     private TableColumn actionColumnOfPool;
 
+    private Dialog klinDialog;
+
+    @FXML
+    private TableView poolView;
+
     public void onStart(){
         DailyAction dailyAction = AppController.getInstasnce().selectLastCrawlerStockAction();
         if (dailyAction != null) {
@@ -166,6 +168,37 @@ public class MainFrameController {
         }else {
             lastCrawlerMarketDate.setText("no crawler data");
         }
+
+        filterStockTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                StockInfo stockInfo = (StockInfo) newValue;
+                System.out.println(stockInfo);
+                if (klinDialog != null){
+                    klinDialog.hide();
+                    klinDialog.close();
+                    klinDialog = null;
+                }
+                try{
+                    int width = 360;
+                    int height = 300;
+                    List<DailyIndex> dailyIndices = DatabaseManager.getInstance().selectDailyIndexByStockId(stockInfo.getId());
+                    KLine kLine = new KLine(dailyIndices);
+                    Dialog dialog = new Dialog();
+                    dialog.setWidth(width);
+                    dialog.setHeight(height);
+                    dialog.initModality(Modality.NONE);
+                    dialog.setDialogPane(kLine);
+                    kLine.drawKLine(height, width);
+                    dialog.getDialogPane().getButtonTypes().add(new ButtonType(stockInfo.getName(), ButtonBar.ButtonData.OK_DONE));
+                    dialog.show();
+                    klinDialog = dialog;
+                }catch (Exception e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
+                    alert.showAndWait();
+                }
+            }
+        });
     }
 
     @FXML
@@ -272,7 +305,6 @@ public class MainFrameController {
 
         /**
          * AddPersonCell constructor
-         * @param stage the stage in which the table is placed.
          * @param table the table to which a new person can be added.
          */
         AddPersonCell( final TableView table) {
@@ -289,6 +321,13 @@ public class MainFrameController {
                     //Person person = new Person();
                     //table.getSelectionModel().select(getIndex());
                     //person = table.getSelectionModel().getSelectedItem();
+                    StockInfo selectStock = (StockInfo) getTableRow().getItem();
+                    try{
+                        AppController.getInstasnce().watchPool(selectStock, StockPoolTypeEnum.SINGLE_RED_POOL);
+                    }catch (Exception e){
+                        throw new RuntimeException("watch pool failed!");
+                    }
+                    System.out.println("select "+getTableRow().getItem());
                 }
             });
         }
@@ -406,5 +445,27 @@ public class MainFrameController {
 
     }
 
+    @FXML
+    public void onSelectStock(ActionEvent event){
 
+    }
+
+    @FXML
+    public void refreshWatchPool(ActionEvent event){
+        try {
+            List<StockInfo> stockInfoList = AppController.getInstasnce().refreshWatchPool();
+            ObservableList<StockInfo> list = FXCollections.observableArrayList();
+            list.addAll(stockInfoList);
+
+
+            idColumnOfPool.setCellValueFactory(new PropertyValueFactory<>("id"));
+            nameColumnOfPool.setCellValueFactory(new PropertyValueFactory<>("name"));
+            codeColumnOfPool.setCellValueFactory(new PropertyValueFactory<>("code"));
+            labelColumnOfPool.setCellValueFactory(new PropertyValueFactory<>("label"));
+
+            poolView.setItems(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

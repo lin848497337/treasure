@@ -7,6 +7,7 @@ import sample.model.DailyIndex;
 import sample.model.StockInfo;
 import sample.service.StockCrawlerService;
 import sample.util.ActionTypeEnum;
+import sample.util.StockPoolTypeEnum;
 import sample.util.StockUtil;
 import sample.view.ProgressCallback;
 
@@ -19,14 +20,22 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AppController {
 
     private static AppController instasnce = new AppController();
 
     private static ExecutorService executorService = Executors.newFixedThreadPool(2, r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
+
+    private static ExecutorService grapMarketExecutorService = Executors.newFixedThreadPool(10, r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
@@ -82,9 +91,8 @@ public class AppController {
     public void loadMarketData(int interval, ProgressCallback callback){
         try {
             System.out.println("begin load market data");
-            double progress = 0.1;
             DatabaseManager.getInstance().truncateDailyIndex();
-            callback.onProgressChange(progress);
+            callback.onProgressChange(0.1);
             List<StockInfo> stockInfoList = DatabaseManager.getInstance().selectStockList();
             if (stockInfoList.isEmpty()){
                 callback.onProgressChange(1);
@@ -92,26 +100,36 @@ public class AppController {
                 return;
             }
             double totalSize = stockInfoList.size();
-            int crawlerCount = 0;
-            List<DailyIndex> dailyIndices = new ArrayList<>();
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.DATE, -interval-7);
             String begin = DateFormatUtils.format(calendar.getTimeInMillis(), "yyyyMMdd");
+            AtomicInteger crawlerCount = new AtomicInteger(0);
+            CountDownLatch countDownLatch = new CountDownLatch(stockInfoList.size());
             for (StockInfo stockInfo : stockInfoList){
-                crawlerCount++;
-                progress = 0.1 + (crawlerCount * 0.6/totalSize);
-                callback.onProgressChange(progress);
-                List<DailyIndex> dailyIndexList = stockCrawlerService.getHistoryDailyIndexs(stockInfo.getId(), stockInfo.getCode(), stockInfo.getExchange(), begin);
-                dailyIndexList.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
-                int min = Math.min(interval, dailyIndexList.size());
-                for (int i=0 ; i<min ; i++){
-                    dailyIndices.add(dailyIndexList.get(i));
-                }
-                DatabaseManager.getInstance().saveDailyIndex(dailyIndices);
-                dailyIndices.clear();
+                grapMarketExecutorService.execute(() -> {
+                    List<DailyIndex> dailyIndices = new ArrayList<>();
+                    int count = crawlerCount.incrementAndGet();
+                    double progress = 0.1 + (count * 0.6/totalSize);
+                    callback.onProgressChange(progress);
+                    try{
+                        List<DailyIndex> dailyIndexList = stockCrawlerService.getHistoryDailyIndexs(stockInfo.getId(), stockInfo.getCode(), stockInfo.getExchange(), begin);
+                        dailyIndexList.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
+                        int min = Math.min(interval, dailyIndexList.size());
+                        for (int i=0 ; i<min ; i++){
+                            dailyIndices.add(dailyIndexList.get(i));
+                        }
+                        DatabaseManager.getInstance().saveDailyIndex(dailyIndices);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }finally {
+                        countDownLatch.countDown();
+                    }
+                    dailyIndices.clear();
+                });
+
             }
-            progress = 1;
-            callback.onProgressChange(progress);
+            countDownLatch.await();
+            callback.onProgressChange(1);
             System.out.println("load market data finish");
             DailyAction action = new DailyAction();
             action.setType(ActionTypeEnum.CRAWLER_MARKET_DATA.ordinal());
@@ -380,7 +398,7 @@ public class AppController {
                         lowerPrice = di.getLowestPrice();
                         continue;
                     }
-                    if (StockUtil.isZhangting(di)){
+                    if (StockUtil.getRise(di) > 0.08){
                         if (dayCount < LESS_DAY){
                             return;
                         }
@@ -489,7 +507,7 @@ public class AppController {
             map.entrySet().stream().forEach((e)->{
                 List<DailyIndex> dailyIndices = e.getValue();
                 int count = dailyIndices.size();
-                if (count < 4){
+                if (count < 10){
                     return;
                 }
                 int dayCount = count - 4;
@@ -498,7 +516,14 @@ public class AppController {
                 DailyIndex d2 = dailyIndices.get(dayCount++);
                 DailyIndex d1 = dailyIndices.get(dayCount++);
                 BigDecimal protectedPrice = d4.getClosingPrice();
-                if (StockUtil.getWave(d4) + StockUtil.getWave(d3)> 12 &&
+                for (int i=0 ; i<dayCount ; i++){
+                    if (dailyIndices.get(i).getClosingPrice().compareTo(protectedPrice) > 0){
+                        return;
+                    }
+                }
+                double r4 = StockUtil.getRise(d4);
+                double r3 = StockUtil.getRise(d3);
+                if (r4 + r3> 0.12 && r4 > 0.05 &&
                      d2.getClosingPrice().compareTo(protectedPrice) > 0 &&
                     d1.getClosingPrice().compareTo(protectedPrice) > 0){
                     selectedIdList.add(e.getKey());
@@ -511,5 +536,13 @@ public class AppController {
         }
 
         return Collections.EMPTY_LIST;
+    }
+
+    public void watchPool(StockInfo stockInfo , StockPoolTypeEnum poolTypeEnum) throws Exception {
+        DatabaseManager.getInstance().addToPool(stockInfo.getId(), poolTypeEnum);
+    }
+
+    public List<StockInfo> refreshWatchPool() throws Exception {
+        return DatabaseManager.getInstance().selectPool();
     }
 }
