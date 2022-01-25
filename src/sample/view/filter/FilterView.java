@@ -44,8 +44,6 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
         filterSTCheckBox.selectedProperty().bindBidirectional(viewModel.getFilterST());
         filterScenCheckBox.selectedProperty().bindBidirectional(viewModel.getFilterScen());
         filterStockTableView.setItems(viewModel.getStockList());
-        refreshStrategy();
-
         rowActionCol.setCellFactory(new Callback<TableColumn, TableCell>() {
             @Override
             public TableCell call(TableColumn param) {
@@ -93,6 +91,14 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
             }
         });
 
+        refreshStrategy();
+
+        AppService.getInstasnce().strategyChangeProperty.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                refreshStrategy();
+            }
+        });
     }
 
     private void refreshStrategy(){
@@ -111,7 +117,7 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
                 strategyFunc.getChildren().add(button);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertUtil.exception(e);
         }
 
     }

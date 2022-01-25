@@ -38,16 +38,20 @@ public class StrategyViewModel implements ViewModel {
         algorithm.setName(name.getValue());
         algorithm.setRule(rule.getValue());
         DatabaseManager.getInstance().saveAlgorithm(algorithm);
+        AppService.getInstasnce().strategyChangeProperty.setValue(System.currentTimeMillis());
+        refreshStrategyList();
     }
 
     void onUpdate(Algorithm algorithm) throws Exception {
         algorithm.setRule(rule.getValue());
         DatabaseManager.getInstance().updateAlgorithm(algorithm);
+        AppService.getInstasnce().strategyChangeProperty.setValue(System.currentTimeMillis());
     }
 
     void onDelete(Algorithm algorithm) throws Exception {
         DatabaseManager.getInstance().deleteAlgorithmById(algorithm.getId());
         refreshStrategyList();
+        AppService.getInstasnce().strategyChangeProperty.setValue(System.currentTimeMillis());
     }
 
     void refreshStrategyList() throws Exception {

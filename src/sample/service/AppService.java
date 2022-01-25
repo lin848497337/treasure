@@ -1,5 +1,11 @@
 package sample.service;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import sample.db.DatabaseManager;
 import sample.math.AlgorithmExecutor;
@@ -40,6 +46,8 @@ public class AppService {
         t.setDaemon(true);
         return t;
     });
+
+    public LongProperty strategyChangeProperty = new SimpleLongProperty(0);
 
     private StockCrawlerService stockCrawlerService = new StockCrawlerService();
 

@@ -25,6 +25,7 @@ public class Bootstrap extends Application {
     }
 
     private void lanchApp(Stage primaryStage) throws IOException {
+        AppService.getInstasnce().init();
         ViewTuple<MainFrameView, MainFrameViewModel> viewTuple = FluentViewLoader.fxmlView(MainFrameView.class).load();
 
         Parent root = viewTuple.getView();

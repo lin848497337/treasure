@@ -91,9 +91,7 @@ public class DatabaseManager {
         Connection conn = getConnection();
         try{
             SQLBuilder<DailyIndex> builder = new SQLBuilder<>(DailyIndex.class);
-            for (DailyIndex stockInfo : dailyIndices){
-                builder.insert(stockInfo, conn);
-            }
+            builder.batchInsert(dailyIndices, conn);
         }finally {
             conn.close();
         }

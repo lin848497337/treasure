@@ -17,7 +17,7 @@
     <orderEntry type="library" name="Maven: com.belerweb:pinyin4j:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.9.3" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.derby:derby:10.14.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.36.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
     <orderEntry type="library" name="Maven: com.github.rholder:guava-retrying:2.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:31.0.1-jre" level="project" />
@@ -27,5 +27,26 @@
     <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.7.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.j2objc:j2objc-annotations:1.3" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:2.0.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.projectlombok:lombok:1.18.6" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.runtime:gmaven-runtime-default:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.runtime:gmaven-runtime-1.5:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.feature:gmaven-feature-support:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.feature:gmaven-feature-api:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.runtime:gmaven-runtime-support:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven.runtime:gmaven-runtime-api:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy.maven:gmaven-common:1.0-rc-3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.plexus:plexus-utils:1.5.5" level="project" />
+    <orderEntry type="library" name="Maven: com.thoughtworks.qdox:qdox:1.6.3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-all-minimal:1.5.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.ant:ant:1.7.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.ant:ant-launcher:1.7.1" level="project" />
+    <orderEntry type="library" name="Maven: jline:jline:0.9.94" level="project" />
+    <orderEntry type="library" name="Maven: junit:junit:3.8.1" level="project" />
+    <orderEntry type="library" name="Maven: de.saxsys:mvvmfx:1.5.2" level="project" />
+    <orderEntry type="library" name="Maven: net.jodah:typetools:0.4.1" level="project" />
+    <orderEntry type="library" name="Maven: eu.lestard:doc-annotations:0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.1.7" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.1.7" level="project" />
   </component>
 </module>

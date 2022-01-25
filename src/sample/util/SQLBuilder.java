@@ -1,5 +1,6 @@
 package sample.util;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import sample.db.ColumnDefine;
 import sample.db.TableDefine;
@@ -150,6 +151,62 @@ public class SQLBuilder<T> {
         }
         pk.setAccessible(true);
         ps.setObject(idx, pk.get(o));
+        ps.executeUpdate();
+        ps.close();
+    }
+
+    public void batchInsert(List<T> objectList, Connection conn) throws Exception {
+        if (CollectionUtils.isEmpty(objectList)){
+            return;
+        }
+        List<Field> allFieldList = listAllField();
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into  ").append(tableName).append("(");
+        for (Field f : allFieldList){
+            ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
+            if (cd == null){
+                continue;
+            }
+            if (cd.autoIncrementPk()){
+                continue;
+            }
+            String cv = f.getName();
+            String columnName = camelTo_(cv);
+            sb.append(columnName).append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(") values");
+        for (Object o : objectList){
+            sb.append("(");
+            for (Field f : allFieldList){
+                ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
+                if (cd == null){
+                    continue;
+                }
+                if (cd.autoIncrementPk()){
+                    continue;
+                }
+                sb.append("?").append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("),");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        PreparedStatement ps = conn.prepareStatement(sb.toString());
+        int idx = 1;
+        for (Object o : objectList) {
+            for (Field f : allFieldList) {
+                ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.autoIncrementPk()) {
+                    continue;
+                }
+                f.setAccessible(true);
+                ps.setObject(idx++, f.get(o));
+            }
+        }
         ps.executeUpdate();
         ps.close();
     }
