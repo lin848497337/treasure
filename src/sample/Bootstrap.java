@@ -1,18 +1,22 @@
-package sample.view;
+package sample;
 
+import de.saxsys.mvvmfx.FluentViewLoader;
+import de.saxsys.mvvmfx.ViewTuple;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.JavaFXBuilderFactory;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import sample.AppController;
+import sample.service.AppService;
 import sample.db.DatabaseManager;
 import sample.model.DailyIndex;
+import sample.view.tools.KLine;
+import sample.view.MainFrameView;
+import sample.view.MainFrameViewModel;
 
 import java.io.IOException;
 import java.util.List;
 
-public class Main extends Application {
+public class Bootstrap extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -21,19 +25,16 @@ public class Main extends Application {
     }
 
     private void lanchApp(Stage primaryStage) throws IOException {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("sample.fxml"));
-        loader.setBuilderFactory(new JavaFXBuilderFactory());
-        primaryStage.setTitle("Treasure");
-        primaryStage.setScene(new Scene(loader.load(), 800, 600));
+        ViewTuple<MainFrameView, MainFrameViewModel> viewTuple = FluentViewLoader.fxmlView(MainFrameView.class).load();
+
+        Parent root = viewTuple.getView();
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
-        Controller controller = loader.getController();
-        controller.init();
     }
 
 
     private static void showKLine(Stage stage) throws Exception {
-        AppController.getInstasnce().init();
+        AppService.getInstasnce().init();
         int width = 360;
         int height = 100;
         List<DailyIndex> dailyIndices = DatabaseManager.getInstance().selectDailyIndexByStockId(5838);

@@ -36,7 +36,8 @@ public class DailyIndexParser {
         BigDecimal lowestPrice = new BigDecimal(strs[5]);
         long tradingVolume = Long.parseLong(strs[8]);
         BigDecimal tradingValue = new BigDecimal(strs[9]);
-        Date date = DateUtils.parseDate(strs[30], new String[] { "yyyy-MM-dd" });
+        String date = strs[30];
+//        Date date = DateUtils.parseDate(strs[30], new String[] { "yyyy-MM-dd" });
 
         DailyIndex dailyIndex = new DailyIndex();
         dailyIndex.setOpeningPrice(openingPrice);
@@ -63,7 +64,7 @@ public class DailyIndexParser {
             String item = kline.getString(i);
             DailyIndex dailyIndex = new DailyIndex();
             String items[] = item.split(",");
-            dailyIndex.setDate(org.apache.commons.lang3.time.DateUtils.parseDate(items[0], "yyyy-MM-dd"));
+            dailyIndex.setDate(items[0]);
             dailyIndex.setOpeningPrice(new BigDecimal(items[1]));
             dailyIndex.setClosingPrice(new BigDecimal(items[2]));
             dailyIndex.setHighestPrice(new BigDecimal(items[3]));
@@ -71,6 +72,7 @@ public class DailyIndexParser {
             dailyIndex.setTradingVolume(Long.valueOf(items[5]));
             dailyIndex.setTradingValue(new BigDecimal(items[6]));
             dailyIndex.setPreClosingPrice(new BigDecimal(items[1]));
+            dailyIndex.setChangeRate(new BigDecimal(items[10]));
             dailyIndex.setStockInfoId(stockInfoID);
             dailyIndices.add(dailyIndex);
         }
@@ -96,7 +98,7 @@ public class DailyIndexParser {
         }
 
         String dateStr = values[0].substring(9, 19);
-        Date date = DateUtils.parseDate(dateStr, new String[] { "MM/dd/yyyy" });
+//        Date date = DateUtils.parseDate(dateStr, new String[] { "MM/dd/yyyy" });
         BigDecimal openingPrice = DecimalUtil.fromStr(values[1]);
         BigDecimal highestPrice = DecimalUtil.fromStr(values[2]);
         BigDecimal lowestPrice = DecimalUtil.fromStr(values[3]);
@@ -111,7 +113,7 @@ public class DailyIndexParser {
         dailyIndex.setLowestPrice(lowestPrice);
         dailyIndex.setTradingVolume(tradingVolume);
         dailyIndex.setTradingValue(tradingValue);
-        dailyIndex.setDate(date);
+        dailyIndex.setDate(dateStr);
 
         return dailyIndex;
     }

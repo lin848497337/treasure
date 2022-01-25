@@ -1,12 +1,8 @@
-package sample.view;
+package sample.view.tools;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.DialogPane;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import sample.model.DailyIndex;
 import sample.util.StockUtil;
@@ -30,8 +26,8 @@ public class KLine extends DialogPane {
         setPrefHeight(height);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         this.getChildren().add(canvas);
-        int paddingWidth = 0;
-        int paddingHeight = 0;
+        int paddingWidth = 10;
+        int paddingHeight = 10;
         int shaddowLineWidth = 2;
 
         height = height - paddingHeight * 2;
@@ -50,13 +46,6 @@ public class KLine extends DialogPane {
         double stepWPerPixel =  width/(dailyIndices.size() + 2);
 
         int klineWidht = (int) (stepWPerPixel - 4);
-
-        canvas.setOnMouseMoved(event -> {
-            int index = (int) (event.getX() / stepWPerPixel);
-            System.out.println("select : "+index);
-            System.out.println(dailyIndices.get(index - 1));
-
-        });
 
 
         for (int i=0 ; i<dailyIndices.size() ; i++){

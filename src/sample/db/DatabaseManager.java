@@ -1,6 +1,7 @@
 package sample.db;
 
 import org.apache.commons.collections.CollectionUtils;
+import sample.model.Algorithm;
 import sample.model.DailyAction;
 import sample.model.DailyIndex;
 import sample.model.StockInfo;
@@ -20,24 +21,47 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class DatabaseManager {
 
     private static DatabaseManager instance = new DatabaseManager();
+    private static final String JDBC_URL = "jdbc:sqlite:sqliteDB.db";
+    private static final String DRIVER_CLASS = "org.sqlite.JDBC";
+    private static final String USER = "root";
+    private static final String PASSWORD = "root";
 
+    private LinkedBlockingQueue<List<DailyIndex>> asyncQueue = new LinkedBlockingQueue<>(2048);
 
     public static DatabaseManager getInstance() {
         return instance;
     }
 
     public void init() throws Exception {
-        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        Class.forName(DRIVER_CLASS);
         Connection conn = getConnection();
         try{
             prepareTable(conn);
         }finally {
             conn.close();
         }
+
+        Thread t = new Thread(() -> {
+            while (true){
+                try{
+                    List<DailyIndex> dailyIndices = asyncQueue.poll(2, TimeUnit.SECONDS);
+                    if (dailyIndices == null){
+                        continue;
+                    }
+                    saveDailyIndex(dailyIndices);
+                }catch (Exception e){
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     public void saveStock(List<StockInfo> stockInfoList) throws Exception {
@@ -63,7 +87,7 @@ public class DatabaseManager {
         }
     }
 
-    public void saveDailyIndex(List<DailyIndex> dailyIndices) throws Exception {
+    private void  saveDailyIndex(List<DailyIndex> dailyIndices) throws Exception {
         Connection conn = getConnection();
         try{
             SQLBuilder<DailyIndex> builder = new SQLBuilder<>(DailyIndex.class);
@@ -73,6 +97,14 @@ public class DatabaseManager {
         }finally {
             conn.close();
         }
+    }
+
+    public void saveDailyIndexAsync(List<DailyIndex> dailyIndices) throws InterruptedException {
+        asyncQueue.put(new ArrayList<>(dailyIndices));
+    }
+
+    public boolean isQueueEmpty(){
+        return asyncQueue.isEmpty();
     }
 
     public void saveAction(DailyAction action) throws Exception {
@@ -96,6 +128,17 @@ public class DatabaseManager {
         }
     }
 
+    public List<StockInfo> selectStockListByNameOrCode(String key) throws Exception {
+        Connection conn = getConnection();
+        try {
+            List<StockInfo> stockInfoList = new SQLBuilder<>(StockInfo.class).select(conn, "code like '%"+key+"%' or name like '%"+key+"%'", null);
+            fillStockPoolInfo(stockInfoList, conn);
+            return stockInfoList;
+        }finally {
+            conn.close();
+        }
+    }
+
     private void fillStockPoolInfo(List<StockInfo> stockInfoList, Connection conn) throws Exception {
         SQLBuilder<StockPoolInfo> poolInfoSQLBuilder = new SQLBuilder<>(StockPoolInfo.class);
         for (StockInfo si : stockInfoList){
@@ -111,7 +154,7 @@ public class DatabaseManager {
     public DailyIndex selectLastDailyIndex(int stockId) throws Exception {
         Connection conn = getConnection();
         try {
-            return new SQLBuilder<>(DailyIndex.class).select(conn, "stock_info_id = "+stockId, "order by date desc fetch first 1 rows only").get(0);
+            return new SQLBuilder<>(DailyIndex.class).select(conn, "stock_info_id = "+stockId, "order by date desc limit 1").get(0);
         }finally {
             conn.close();
         }
@@ -121,7 +164,7 @@ public class DatabaseManager {
     public DailyAction seletLastCrawlerStockAction(int type)throws Exception{
         Connection conn = getConnection();
         try {
-            List<DailyAction> lst = new SQLBuilder<>(DailyAction.class).select(conn, "type="+ type, "order by id desc fetch first 1 rows only");
+            List<DailyAction> lst = new SQLBuilder<>(DailyAction.class).select(conn, "type="+ type, "order by id desc limit 1");
             if (lst.size() > 0){
                 return lst.get(0);
             }
@@ -141,13 +184,16 @@ public class DatabaseManager {
         tableList.add(new SQLBuilder<>(DailyIndex.class));
         tableList.add(new SQLBuilder<>(DailyAction.class));
         tableList.add(new SQLBuilder<>(StockPoolInfo.class));
+        tableList.add(new SQLBuilder<>(Algorithm.class));
 
         Set<String> haveTableSet = allTables(conn);
         Statement ps = conn.createStatement();
         try{
             for (SQLBuilder builder : tableList){
                 if (!haveTableSet.contains(builder.getTableName())){
-                    ps.execute(builder.generateDDL());
+                    String ddl = builder.generateDDL();
+                    System.out.println("prepare table for : "+ddl);
+                    ps.execute(ddl);
                 }
             }
         }finally {
@@ -168,7 +214,7 @@ public class DatabaseManager {
 
 
     public Connection getConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:derby:metaDb;create=true");
+        Connection connection = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
         return connection;
     }
 
@@ -220,6 +266,16 @@ public class DatabaseManager {
         }
     }
 
+    public void delFromPool(Integer stockId) throws Exception {
+        SQLBuilder<StockPoolInfo> poolInfoSQLBuilder = new SQLBuilder<>(StockPoolInfo.class);
+        Connection conn = getConnection();
+        try{
+            poolInfoSQLBuilder.delete(conn, "stock_info_id = "+stockId);
+        }finally {
+            conn.close();
+        }
+    }
+
     public List<StockInfo> selectPool() throws Exception {
         SQLBuilder<StockPoolInfo> poolInfoSQLBuilder = new SQLBuilder<>(StockPoolInfo.class);
         Connection conn = getConnection();
@@ -246,6 +302,48 @@ public class DatabaseManager {
 
             return stockPoolInfoList;
 
+        }finally {
+            conn.close();
+        }
+    }
+
+    public List<Algorithm> listAlgorithm() throws Exception {
+        SQLBuilder sqlBuilder = new SQLBuilder(Algorithm.class);
+        Connection conn = getConnection();
+        try{
+            List<Algorithm> stockPoolInfoList = sqlBuilder.select(conn, null, null);
+            return stockPoolInfoList;
+
+        }finally {
+            conn.close();
+        }
+    }
+
+    public void saveAlgorithm(Algorithm algorithm) throws Exception {
+        SQLBuilder<Algorithm> sqlBuilder = new SQLBuilder<>(Algorithm.class);
+        Connection conn = getConnection();
+        try{
+            sqlBuilder.insert(algorithm, conn);
+        }finally {
+            conn.close();
+        }
+    }
+
+    public void updateAlgorithm(Algorithm algorithm) throws Exception {
+        SQLBuilder<Algorithm> sqlBuilder = new SQLBuilder<>(Algorithm.class);
+        Connection conn = getConnection();
+        try{
+            sqlBuilder.update(algorithm, conn);
+        }finally {
+            conn.close();
+        }
+    }
+
+    public void deleteAlgorithmById(int id)throws Exception{
+        SQLBuilder<Algorithm> sqlBuilder = new SQLBuilder<>(Algorithm.class);
+        Connection conn = getConnection();
+        try{
+            sqlBuilder.delete(conn, "id="+id);
         }finally {
             conn.close();
         }

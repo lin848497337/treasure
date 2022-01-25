@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import sample.db.ColumnDefine;
 import sample.db.TableDefine;
 import sample.model.StockInfo;
+import sample.util.convert.DecimalConvert;
+import sample.util.convert.TimestampConvert;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -13,10 +15,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SQLBuilder<T> {
     private Class<T> cls;
     private String tableName;
+    private static List<TypeConvert> converts = new CopyOnWriteArrayList<>();
+
+    static {
+        converts.add(new DecimalConvert());
+        converts.add(new TimestampConvert());
+    }
 
     public SQLBuilder(Class<T> cls) {
         this.cls = cls;
@@ -37,7 +46,7 @@ public class SQLBuilder<T> {
 
     public void truncate(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
-        statement.executeUpdate("truncate table "+tableName);
+        statement.executeUpdate("DELETE FROM  "+tableName);
         statement.close();
     }
 
@@ -74,6 +83,16 @@ public class SQLBuilder<T> {
         return list;
     }
 
+    public int delete(Connection conn, String whereCondition) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("delete from ").append(tableName);
+        if (StringUtils.isNotBlank(whereCondition)){
+            sb.append(" where ").append(whereCondition);
+        }
+        Statement statement = conn.createStatement();
+        return statement.executeUpdate(sb.toString());
+    }
+
     private <T>  T read(ResultSet rs, Class<T> cls) throws Exception {
         List<Field> fs = listAllField();
         T t = cls.newInstance();
@@ -85,9 +104,54 @@ public class SQLBuilder<T> {
             }
             String name = f.getName();
             String fieldName = SQLBuilder.camelTo_(name);
-            f.set(t, rs.getObject(fieldName));
+            Object value = rs.getObject(fieldName);
+            for (TypeConvert tc : converts){
+                if (tc.isSupport(f.getType())){
+                    value = tc.convert(value);
+                }
+            }
+            f.set(t, value);
         }
         return t;
+    }
+
+    public void update(Object o, Connection conn) throws Exception {
+        List<Field> allFieldList = listAllField();
+        StringBuilder sb = new StringBuilder();
+        sb.append("update  ").append(tableName).append(" set ");
+        Field pk = null;
+        for (Field f : allFieldList){
+            ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
+            if (cd == null){
+                continue;
+            }
+            if (cd.autoIncrementPk()){
+                pk = f;
+                continue;
+            }
+            String cv = f.getName();
+            String columnName = camelTo_(cv);
+            sb.append(columnName).append("=?,");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" where ").append(camelTo_(pk.getName())).append("=?");
+        PreparedStatement ps = conn.prepareStatement(sb.toString());
+        int idx = 1;
+        for (Field f : allFieldList){
+            ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
+            if (cd == null){
+                continue;
+            }
+            if (cd.autoIncrementPk()){
+                continue;
+            }
+            f.setAccessible(true);
+            ps.setObject(idx++, f.get(o));
+        }
+        pk.setAccessible(true);
+        ps.setObject(idx, pk.get(o));
+        ps.executeUpdate();
+        ps.close();
     }
 
     public void insert(Object o, Connection conn) throws Exception {
@@ -159,7 +223,7 @@ public class SQLBuilder<T> {
     public String generateDDL(){
         List<Field> fieldList = listAllField();
         StringBuilder sb = new StringBuilder();
-        sb.append("create table ").append(tableName).append("(");
+        sb.append("create table if not exists ").append(tableName).append("(");
         for (Field f : fieldList){
             ColumnDefine cd = f.getAnnotation(ColumnDefine.class);
             if (cd == null){
@@ -167,9 +231,11 @@ public class SQLBuilder<T> {
             }
             String cv = f.getName();
             String columnName = camelTo_(cv);
-            sb.append(columnName).append(" ").append(cd.define());
+            sb.append(columnName).append(" ");
             if (cd.autoIncrementPk()){
-                sb.append(" generated always as identity");
+                sb.append("INTEGER PRIMARY KEY");
+            }else {
+                sb.append(cd.define());
             }
             sb.append(",");
         }

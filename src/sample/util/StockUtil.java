@@ -137,4 +137,8 @@ public class StockUtil {
     public static double getWave(DailyIndex dailyIndex){
         return dailyIndex.getHighestPrice().subtract(dailyIndex.getLowestPrice()).divide(dailyIndex.getPreClosingPrice(), 2, RoundingMode.HALF_UP).doubleValue();
     }
+
+    public static double getHtWave(DailyIndex dailyIndex){
+        return dailyIndex.getHighestPrice().subtract(dailyIndex.getPreClosingPrice()).divide(dailyIndex.getPreClosingPrice(), 2, RoundingMode.HALF_UP).doubleValue();
+    }
 }

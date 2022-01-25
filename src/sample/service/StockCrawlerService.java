@@ -45,6 +45,10 @@ public class StockCrawlerService {
         return list;
     }
 
+    public static void main(String[] args) {
+        StockCrawlerService service = new StockCrawlerService();
+        System.out.println(service.getStockList().size());
+    }
 
     private List<StockInfo> getStockList(String fs) {
         String content = HttpUtil.sendGet(httpClient, "http://20.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=10000000&np=1&fid=f3&fields=f12,f13,f14&fs=" + fs);

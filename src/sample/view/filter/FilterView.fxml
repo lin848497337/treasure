@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sample.view.filter.FilterView"
+            prefHeight="400.0" prefWidth="600.0">
+    <top>
+        <HBox fx:id="strategyFunc" prefHeight="30.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="filterStockTableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn  prefWidth="75.0" text="name" >
+                    <cellValueFactory >
+                        <PropertyValueFactory property="name" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn  prefWidth="75.0" text="code" >
+                    <cellValueFactory >
+                        <PropertyValueFactory property="code" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn  prefWidth="75.0" text="收盘价" >
+                    <cellValueFactory >
+                        <PropertyValueFactory property="closePrice" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn  prefWidth="75.0" text="板块" >
+                    <cellValueFactory >
+                        <PropertyValueFactory property="belong" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn  prefWidth="75.0" text="涨幅" >
+                    <cellValueFactory >
+                        <PropertyValueFactory property="rase" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="rowActionCol"  prefWidth="75.0" text="操作"  />
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <HBox prefHeight="30.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <children>
+                <CheckBox fx:id="filterSTCheckBox" mnemonicParsing="false" text="过滤ST" />
+                <CheckBox fx:id="filterCreatationCheckBox" mnemonicParsing="false" text="过滤创业板" />
+                <CheckBox fx:id="filterNewCheckBox" mnemonicParsing="false" text="过滤次新股" />
+                <CheckBox fx:id="filterScenCheckBox" mnemonicParsing="false" text="过滤科创板" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>
