@@ -35,42 +35,24 @@ import java.util.ResourceBundle;
 
 public class WatchPoolView implements FxmlView<WatchPoolModel>, Initializable {
 
-    private Dialog klinDialog;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.poolView.setItems(viewModel.getStockList());
 
-        this.poolView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                StockInfo stockInfo = (StockInfo) newValue;
-                System.out.println(stockInfo);
-                if (klinDialog != null){
-                    klinDialog.hide();
-                    klinDialog.close();
-                    klinDialog = null;
-                }
+        this.poolView.setOnMouseClicked(event -> {
+            StockInfo stockInfo = (StockInfo) this.poolView.getSelectionModel().selectedItemProperty().getValue();
+            if (stockInfo != null){
                 try{
-                    int width = 360;
-                    int height = 300;
                     List<DailyIndex> dailyIndices = DatabaseManager.getInstance().selectDailyIndexByStockId(stockInfo.getId());
-                    KLine kLine = new KLine(dailyIndices);
-                    Dialog dialog = new Dialog();
-                    dialog.setWidth(width);
-                    dialog.setHeight(height);
-                    dialog.initModality(Modality.NONE);
-                    dialog.setDialogPane(kLine);
-                    kLine.drawKLine(height, width);
-                    dialog.getDialogPane().getButtonTypes().add(new ButtonType(stockInfo.getName(), ButtonBar.ButtonData.OK_DONE));
-                    dialog.show();
-                    klinDialog = dialog;
+                    KLine.showKLine(stockInfo.getName(), dailyIndices);
                 }catch (Exception e){
                     Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
                     alert.showAndWait();
                 }
             }
         });
+
 
         actionButton.setCellFactory(new Callback<TableColumn, TableCell>() {
             @Override

@@ -20,6 +20,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.util.Callback;
 import sample.db.DatabaseManager;
+import sample.view.AlertUtil;
 
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -37,12 +38,12 @@ import java.util.Set;
 public class SqlView implements FxmlView<SqlViewModel>, Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        viewModel.getResultList().addListener(new ListChangeListener() {
+        viewModel.getResultList().addListener(new ChangeListener() {
             @Override
-            public void onChanged(Change c) {
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
                 int size = resultView.getColumns().size();
                 resultView.getColumns().remove(0 , size);
-                List list = c.getAddedSubList();
+                List list = (List) newValue;
                 Map map = (Map) list.get(0);
                 Set<String> set = map.keySet();
                 for (String name : set){
@@ -78,8 +79,7 @@ public class SqlView implements FxmlView<SqlViewModel>, Initializable {
         try {
             viewModel.executeSQLBtn(sqlEditor.getText());
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.CLOSE);
-            alert.showAndWait();
+            AlertUtil.exception(e);
         }
     }
 

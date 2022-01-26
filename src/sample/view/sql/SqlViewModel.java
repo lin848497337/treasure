@@ -20,6 +20,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Data
 public class SqlViewModel implements ViewModel {
@@ -34,12 +35,13 @@ public class SqlViewModel implements ViewModel {
         int count = metaData.getColumnCount();
         ObservableList<Map> list = FXCollections.observableArrayList();
         while (rs.next()){
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new TreeMap<>();
             for(int i=0 ; i<count ; i++){
                 Object v = rs.getObject(i+1);
                 map.put(metaData.getColumnName(i+1), String.valueOf(v));
             };
             list.add(map);
         }
+        resultList.setValue(list);
     }
 }

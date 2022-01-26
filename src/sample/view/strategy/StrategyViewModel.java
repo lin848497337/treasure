@@ -12,7 +12,6 @@ import sample.db.DatabaseManager;
 import sample.model.Algorithm;
 import sample.model.StockInfo;
 import sample.service.AppService;
-import sample.view.AlertUtil;
 
 import java.util.List;
 

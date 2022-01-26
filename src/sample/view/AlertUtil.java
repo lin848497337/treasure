@@ -3,6 +3,9 @@ package sample.view;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.io.DataOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Optional;
 
 public class AlertUtil {
@@ -19,7 +22,11 @@ public class AlertUtil {
 
 
     public static void exception(Exception e){
-        Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.CLOSE);
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter pw = new PrintWriter(stringWriter);
+        e.printStackTrace(pw);
+        pw.close();
+        Alert alert = new Alert(Alert.AlertType.ERROR, stringWriter.toString(), ButtonType.CLOSE);
         alert.showAndWait();
     }
 }
