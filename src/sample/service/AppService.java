@@ -24,12 +24,18 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class AppService {
 
@@ -84,6 +90,9 @@ public class AppService {
             callback.onProgressChange(0.1);
             List<StockInfo> stockInfoList = stockCrawlerService.getStockList();
             callback.onProgressChange(0.5);
+            Set<String> dbStockSet = DatabaseManager.getInstance().selectStockList().stream().map(StockInfo::getCode).collect(
+                Collectors.toSet());
+            stockInfoList  = stockInfoList.stream().filter(s -> !dbStockSet.contains(s.getCode())).collect(Collectors.toList());
             DatabaseManager.getInstance().saveStock(stockInfoList);
             callback.onProgressChange(1);
             System.out.println("load data finish");

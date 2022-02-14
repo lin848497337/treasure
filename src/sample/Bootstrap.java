@@ -23,8 +23,8 @@ public class Bootstrap extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-//        lanchApp(primaryStage);
-        showKLine(primaryStage);
+        lanchApp(primaryStage);
+//        showKLine(primaryStage);
     }
 
     private void lanchApp(Stage primaryStage) throws IOException {

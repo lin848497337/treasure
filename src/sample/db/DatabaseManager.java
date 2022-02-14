@@ -68,7 +68,6 @@ public class DatabaseManager {
         Connection conn = getConnection();
         try{
             SQLBuilder<StockInfo> builder = new SQLBuilder<>(StockInfo.class);
-            builder.truncate(conn);
             for (StockInfo stockInfo : stockInfoList){
                 builder.insert(stockInfo, conn);
             }

@@ -1,65 +1,49 @@
-package sample.math
+package sample.math;
 
-import sample.model.DailyIndex
+import sample.model.DailyIndex;
 
-import java.math.RoundingMode
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 
-/**
- * 定义
- * MA5(CD)
- * MA10(CD)
- * MA20(CD)
- * CLOSE(CD)
- * OPEN(CD)
- * HIGHT(CD)
- * LOW(CD)
- * VOL(CD)
- * CURRENT_DATE:d
- *
- * MAX(BEGIN, END, EXP)
- * MIN(BEGIN, END, EXP)
- */
-class Template {
+public abstract class BaseScript {
+    public int CURRENT_DATE = 0;
+    public int CD = 0;
+    public List<DailyIndex> dailyIndices;
 
-    private int CURRENT_DATE = 0;
-    private int CD = 0;
-    private List<DailyIndex> dailyIndices;
-
-    boolean filter(List<DailyIndex> dailyIndices){
+    public final boolean filter(List<DailyIndex> dailyIndices){
         this.dailyIndices = dailyIndices;
         CURRENT_DATE = dailyIndices.size() - 1;
         CD = CURRENT_DATE;
         return doFilter();
     }
 
-    boolean doFilter(){
-        // gen code
-        return
-    }
+    public abstract boolean doFilter();
 
-    double ROSE(int offset){
+    public final double ROSE(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
-        return dailyIndex.getClosingPrice().subtract(dailyIndex.getPreClosingPrice()).divide(dailyIndex.getPreClosingPrice(), 2, RoundingMode.HALF_UP).multiply(100).doubleValue();
+        return dailyIndex.getClosingPrice().subtract(dailyIndex.getPreClosingPrice()).divide(dailyIndex.getPreClosingPrice(), 2, RoundingMode.HALF_UP).multiply(
+            BigDecimal.valueOf(100)).doubleValue();
     }
 
-    double MA5(int offset){
+    public final double MA5(int offset){
         return _MA(offset, 5);
     }
 
-    double MA10(int offset){
+    public final double MA10(int offset){
         return _MA(offset, 10);
     }
 
-    double MA20(int offset){
+    public final double MA20(int offset){
         return _MA(offset, 20);
     }
 
-    double _MA(int offset , int days){
+    private double _MA(int offset , int days){
         int realOffset = CURRENT_DATE + offset;
         int size = 0;
         BigDecimal total = new BigDecimal(0);
-        for (int i = realOffset ; i-- ; i>=0){
+        for (int i = realOffset ; i>=0 ; i-- ){
             size++;
             DailyIndex dailyIndex = dailyIndices.get(i);
             total = total.add(dailyIndex.getClosingPrice());
@@ -70,34 +54,52 @@ class Template {
         return total.divide(new BigDecimal(size), 2, RoundingMode.HALF_UP).doubleValue();
     }
 
-    double CLOSE(int offset){
+    public final double CLOSE(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
         return dailyIndex.getClosingPrice().doubleValue();
     }
 
-    double OPEN(int offset){
+    public final double OPEN(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
         return dailyIndex.getOpeningPrice().doubleValue();
     }
 
-    double HIGH(int offset){
+    public final double HIGH(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
         return dailyIndex.getHighestPrice().doubleValue();
     }
 
-    double LOW(int offset){
+    public final double LOW(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
         return dailyIndex.getLowestPrice().doubleValue();
     }
 
-    long VOL(int offset){
+    public final long VOL(int offset){
         int realOffset = CURRENT_DATE + offset;
         DailyIndex dailyIndex = dailyIndices.get(realOffset);
         return dailyIndex.getTradingVolume();
+    }
+
+    public final long AVOL(int boffset, int eoffset){
+        long vol = 0;
+        int days = eoffset - boffset;
+        if (days <= 0){
+            throw new IllegalArgumentException();
+        }
+        for (int i=boffset  ; i<eoffset; i++){
+            vol += VOL(i);
+        }
+        return vol / days;
+    }
+
+    public final long AVOL(int days){
+        int b = 0 - CURRENT_DATE;
+        int e = days - CURRENT_DATE;
+        return AVOL(b, e);
     }
 
 }

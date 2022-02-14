@@ -15,7 +15,9 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.util.Callback;
 import sample.db.DatabaseManager;
@@ -59,6 +61,21 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
             }
         });
 
+        filterStockTableView.setOnKeyReleased(event -> {
+            StockInfo stockInfo =
+                (StockInfo) filterStockTableView.getSelectionModel().selectedItemProperty().getValue();
+
+            if (stockInfo != null){
+                try{
+                    List<DailyIndex> dailyIndices = DatabaseManager.getInstance().selectDailyIndexByStockId(stockInfo.getId());
+                    KLine.showKLine(klineContainer, dailyIndices);;
+                }catch (Exception e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
+                    alert.showAndWait();
+                }
+            }
+        });
+
         filterStockTableView.setOnMouseClicked(event -> {
             StockInfo stockInfo =
                 (StockInfo) filterStockTableView.getSelectionModel().selectedItemProperty().getValue();
@@ -66,7 +83,7 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
             if (stockInfo != null){
                 try{
                     List<DailyIndex> dailyIndices = DatabaseManager.getInstance().selectDailyIndexByStockId(stockInfo.getId());
-                    KLine.showKLine(stockInfo.getName(), dailyIndices);
+                    KLine.showKLine(klineContainer, dailyIndices);;
                 }catch (Exception e){
                     Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
                     alert.showAndWait();
@@ -129,5 +146,8 @@ public class FilterView implements FxmlView<FilterModel>, Initializable {
 
     @FXML
     private CheckBox filterSTCheckBox;
+
+    @FXML
+    private BorderPane klineContainer;
 
 }

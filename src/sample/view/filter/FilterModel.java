@@ -48,6 +48,9 @@ public class FilterModel implements ViewModel {
             if (scen && s.getCode().startsWith("688")){
                 return false;
             }
+            if (!s.getCode().startsWith("0") && !s.getCode().startsWith("6") && !s.getCode().startsWith("3")){
+                return false;
+            }
             return true;
         }).collect(Collectors.toList());
         ObservableList<StockInfo> observableList = FXCollections.observableArrayList();

@@ -10,7 +10,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogEvent;
 import javafx.scene.control.DialogPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import sample.model.DailyIndex;
 import sample.util.StockUtil;
 
@@ -27,6 +29,7 @@ public class KLine extends Canvas {
 
     private static double bestWidth = 400;
     private static double bestHeight = 300;
+    private static Dialog instance = null;
 
     public KLine(List<DailyIndex> dailyIndices, double width, double height) {
         super(width, height);
@@ -34,9 +37,18 @@ public class KLine extends Canvas {
         drawKLine(width, height);
     }
 
+    public static void showKLine(BorderPane borderPane, List<DailyIndex> dailyIndices){
+        KLine kLine = new KLine(dailyIndices, bestWidth, bestHeight);
+        borderPane.setCenter(kLine);
+    }
 
     public static void showKLine(String title, List<DailyIndex> dailyIndices){
+        if (instance != null){
+            instance.close();
+            instance = null;
+        }
         Dialog dialog = new Dialog();
+        dialog.initModality(Modality.NONE);
         KLine kLine = new KLine(dailyIndices, bestWidth, bestHeight);
         DialogPane dialogPane = new DialogPane();
         dialogPane.setContent(kLine);
@@ -47,6 +59,7 @@ public class KLine extends Canvas {
         Node closeButton = dialog.getDialogPane().lookupButton(ButtonType.CLOSE);
         closeButton.setVisible(false);
         dialogPane.getScene().getWindow().sizeToScene();
+        instance = dialog;
         dialog.show();
     }
 
@@ -149,7 +162,7 @@ public class KLine extends Canvas {
             close = kheight - (close - basePrice) * hPerPixel;
             min = kheight - (min - basePrice) * hPerPixel;
             max = kheight - (max - basePrice) * hPerPixel;
-            System.out.println(MessageFormat.format("open:{0}, close:{1} , min:{2}, max:{3}", open, close, min, max));
+//            System.out.println(MessageFormat.format("open:{0}, close:{1} , min:{2}, max:{3}", open, close, min, max));
             vheight += kheight;
             volume = (long) (vheight - (volume * stepVolume + paddingHeight));
             baseVolume = vheight - paddingHeight;
