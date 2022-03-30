@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sample.view.crawler.DataCrawlerView"
+            prefHeight="400.0" prefWidth="600.0">
+        <children>
+            <Button id="crawlerDataBtn" layoutX="35.0" layoutY="14.0" mnemonicParsing="false" onAction="#onStartCrawlerData" text="列表采集" />
+            <Label layoutX="118.0" layoutY="19.0" text="最近采集日期:" />
+            <Label id="lastCrawlerDate" fx:id="lastCrawlerDate" layoutX="211.0" layoutY="19.0" text="2020-01-01" />
+            <ProgressBar id="crawlerDataProgressBar" fx:id="crawlerDataProgressBar" layoutX="111.0" layoutY="59.0" prefHeight="20.0" prefWidth="435.0" progress="0.0" />
+            <Label layoutX="35.0" layoutY="61.0" text="采集进度" />
+            <Button layoutX="34.0" layoutY="104.0" mnemonicParsing="false" onAction="#onStartCrawlerMarketData" text="行情采集" />
+            <Label layoutX="118.0" layoutY="109.0" text="最近采集日期:" />
+            <Label id="lastCrawlerMarketDate" fx:id="lastCrawlerMarketDate" layoutX="211.0" layoutY="109.0" text="2020-01-01" />
+            <Label layoutX="34.0" layoutY="185.0" text="采集进度" />
+            <ProgressBar id="crawlerDataProgressBar" fx:id="crawlerMarketDataProgressBar" layoutX="110.0" layoutY="184.0" prefHeight="20.0" prefWidth="435.0" progress="0.0" />
+            <Label layoutX="34.0" layoutY="151.0" text="采集天数:" />
+            <TextField fx:id="crawlerDayIntervalField" layoutX="111.0" layoutY="146.0" promptText="采集最近n天数据" text="182" />
+        </children>
+</AnchorPane>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.view.MainFrameView">
+   <center>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab text="总控面板">
+               <content>
+                  <fx:include source="crawler/DataCrawlerView.fxml" />
+               </content>
+          </Tab>
+          <Tab text="列表">
+               <content>
+                   <fx:include source="stock/StockListView.fxml" />
+               </content>
+          </Tab>
+            <Tab text="算法">
+               <content>
+                  <fx:include source="filter/FilterView.fxml" />
+               </content>
+            </Tab>
+            <Tab text="SQL执行器">
+               <content>
+                  <fx:include source="sql/SqlView.fxml" />
+               </content>
+            </Tab>
+            <Tab text="策略编辑">
+               <content>
+                  <fx:include source="strategy/StrategyView.fxml" />
+               </content>
+            </Tab>
+            <Tab text="观察池">
+               <content>
+                  <fx:include source="observer/WatchPoolView.fxml" />
+               </content>
+            </Tab>
+            <Tab text="情绪指标">
+                <content>
+                    <fx:include source="emotion/EmotionView.fxml" />
+                </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </center>
+</BorderPane>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ListView?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sample.view.strategy.StrategyView"
+            prefHeight="400.0" prefWidth="600.0">
+    <center>
+        <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0"
+                   BorderPane.alignment="CENTER">
+            <items>
+
+                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                    <top>
+                        <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                            <items>
+                                <Button mnemonicParsing="false" onAction="#onNewRuleAction" text="新建"/>
+                                <Button mnemonicParsing="false" onAction="#onPreviewRuleAction" text="预览"/>
+                                <Button fx:id="saveRuleBtn" mnemonicParsing="false" onAction="#onSaveRuleAction"
+                                        text="保存"/>
+                            </items>
+                        </ToolBar>
+                    </top>
+                    <center>
+                        <SplitPane dividerPositions="0.5" orientation="HORIZONTAL" prefHeight="200.0" prefWidth="160.0"
+                                   BorderPane.alignment="CENTER">
+                            <items>
+                                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                    <center>
+                                        <ListView fx:id="strategyList"></ListView>
+                                    </center>
+                                </BorderPane>
+                                <TextArea fx:id="ruleEditor" prefHeight="200.0" prefWidth="200.0"
+                                          BorderPane.alignment="CENTER"/>
+                            </items>
+                        </SplitPane>
+
+                    </center>
+                </BorderPane>
+
+                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                    <center>
+                        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE"
+                                 BorderPane.alignment="CENTER">
+                            <tabs>
+                                <Tab text="结果">
+                                    <content>
+                                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                            <center>
+                                                <TableView fx:id="strategyOutputResult" prefHeight="200.0"
+                                                           prefWidth="200.0" BorderPane.alignment="CENTER">
+                                                    <columns>
+                                                        <TableColumn prefWidth="75.0" text="name">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="name"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn prefWidth="75.0" text="code">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="code"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn prefWidth="75.0" text="收盘价">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="closePrice"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn prefWidth="75.0" text="板块">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="belong"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn prefWidth="75.0" text="涨幅">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="rase"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn prefWidth="75.0" text="操作"/>
+                                                    </columns>
+                                                </TableView>
+                                            </center>
+                                        </BorderPane>
+                                    </content>
+                                </Tab>
+                                <Tab text="输出">
+                                    <content>
+                                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                            <center>
+                                                <TextArea fx:id="strategyOutputConsole" editable="false"
+                                                          prefHeight="200.0" prefWidth="200.0"
+                                                          BorderPane.alignment="CENTER"/>
+                                            </center>
+                                        </BorderPane>
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+                    </center>
+                </BorderPane>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
